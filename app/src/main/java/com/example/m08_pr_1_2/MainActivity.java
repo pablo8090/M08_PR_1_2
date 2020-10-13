@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         txtAttempts.setTextColor(Color.BLACK);
 
         final EditText editNumber = findViewById(R.id.editNumber);
-
+        
         final Button btValidate = findViewById(R.id.btValidate);
         btValidate.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     {
         timerActive = true;
         number = (int) (Math.random() * 100 + 1);
-        number = 10; // borrar!!
+        //number = 10;
         attempts = 0;
         time = 0;
     }
