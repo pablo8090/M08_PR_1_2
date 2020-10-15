@@ -10,4 +10,11 @@ public class Result {
         this.nick = nick;
         this.time = ms;
     }
+    public String[] getData (){
+        String items[] = new String[3];
+        items[0] = this.nick;
+        items[1] = String.valueOf(this.tries);
+        items[2] = String.valueOf(this.time);
+        return items;
+    }
 }

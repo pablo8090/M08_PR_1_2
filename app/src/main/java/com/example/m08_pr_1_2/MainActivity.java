@@ -115,14 +115,14 @@ public class MainActivity extends AppCompatActivity {
     {
         timerActive = true;
         number = (int) (Math.random() * 100 + 1);
-        //number = 10;
+        number = 10;
         attempts = 0;
         time = 0;
     }
 
     private void setTimerTask() {
         second = new TimerTask() {
-            @Override
+
             public void run() {
                 if (timerActive)
                 {
@@ -135,7 +135,6 @@ public class MainActivity extends AppCompatActivity {
                     seconds = time;
 
                     runOnUiThread(new Runnable() {
-                        @Override
                         public void run() {
                             txtTimer.setText(getTimerString());
                         }
@@ -174,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         adRanking.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
             public void onClick(DialogInterface dialog, int which) {
                 reset();
             }
