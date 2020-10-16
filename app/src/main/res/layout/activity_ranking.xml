@@ -7,8 +7,8 @@
     tools:context=".Ranking">
 
     <FrameLayout
-        android:layout_width="319dp"
-        android:layout_height="547dp"
+        android:layout_width="371dp"
+        android:layout_height="562dp"
         app:layout_constraintBottom_toTopOf="@+id/btBack"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean timerActive;
 
 
-    private AlertDialog.Builder adRanking;
+    private AlertDialog adRanking;
     private EditText etRanking;
 
 
@@ -45,9 +47,17 @@ public class MainActivity extends AppCompatActivity {
 
         reset();
 
+        // Setting TextViews
+            // Timer view
         txtTimer = findViewById(R.id.txtTimer);
         txtTimer.setText("");
         txtTimer.setTextColor(Color.BLACK);
+            // Log view
+        final TextView txtLog = findViewById(R.id.txtLog);
+        txtLog.setText("");
+        txtLog.setTextColor(Color.RED);
+        txtLog.setTextSize(TypedValue.COMPLEX_UNIT_SP,17);
+
 
         setTimerTask();
 
@@ -63,11 +73,11 @@ public class MainActivity extends AppCompatActivity {
         btValidate.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
                 String sIn = String.valueOf(editNumber.getText());
-                String toastText = null;
+                String logReg = null;
 
                 if (sIn.equals("") || sIn == null)
                 {
-                    toastText = "No has introducido ningun numero!!";
+                    logReg = "No has introducido ningun numero!!";
                 }
                 else
                 {
@@ -75,27 +85,37 @@ public class MainActivity extends AppCompatActivity {
 
                     if (number > in)
                     {
-                        toastText = "El numero que buscas es mas grande que " + in;
+                        logReg = "El numero que buscas es mas grande que " + in;
                         attempts++;
                     }
                     else if (number < in)
                     {
-                        toastText = "El numero que buscas es mas pequeño que " + in;
+                        logReg = "El numero que buscas es mas pequeño que " + in;
                         attempts++;
                     }
                     else
                     {
                         timerActive = false;
                         recordTime = time;
-                        toastText = "Has encontrado el numero " + number + " en " + attempts + " intentos y " + recordTime + " segundos!";
-                        adRanking.show();
+                        logReg = "Has encontrado el numero " + number + " en " + attempts + " intentos y " + recordTime + " segundos!";
+                        showRankingDialog();
 
                     }
                 }
 
-                Toast t = Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT);
-                t.show();
+                txtLog.append(getTimerString() + " > " + logReg + "\n");
+                if ((txtLog.getLineCount() * txtLog.getLineHeight() > txtLog.getHeight()))
+                {
+                   CharSequence logContent = txtLog.getText();
+                   int i = 0;
+                   for (i = 0; i < logContent.length(); i++)
+                   {
+                       if (logContent.charAt(i) == '\n')
+                           break;
+                   }
 
+                   txtLog.setText(logContent.subSequence(i+1,logContent.length()));
+                }
                 txtAttempts.setText("Intentos: " + attempts);
                 editNumber.setText("");
             }
@@ -118,6 +138,11 @@ public class MainActivity extends AppCompatActivity {
         number = 10;
         attempts = 0;
         time = 0;
+        minutes = 0;
+        TextView log = findViewById(R.id.txtLog);
+        log.setText("");
+        TextView att = findViewById(R.id.txtAttempts);
+        att.setText("Intentos: 0");
     }
 
     private void setTimerTask() {
@@ -156,27 +181,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void setRankingDialog() {
-        adRanking = new AlertDialog.Builder(this);
-        adRanking.setTitle("Ranking");
-        adRanking.setMessage("Introduce tu nombre: ");
-        etRanking = new EditText(this);
-        adRanking.setView(etRanking);
+    private void showRankingDialog()
+    {
+        adRanking.show();
+        adRanking.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String value =  etRanking.getText().toString();
+                if (value.length() <= 10 && value.length() >= 1)
+                {
+                    adRanking.dismiss();
+                    openRanking(value);
+                }
+                else
+                {
+                    Toast t = Toast.makeText(getApplicationContext(), "El nombre tiene que contener entre 1 y 10 caracteres", Toast.LENGTH_LONG);
+                    t.show();
+                }
 
-        adRanking.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+
+                reset();
+            }
+        });
+    }
+    private void setRankingDialog() {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle("¿Quieres guardar tu puntuación en el Ranking?");
+        adb.setMessage("Introduce tu nombre: ");
+        etRanking = new EditText(this);
+        adb.setView(etRanking);
+
+        adb.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String value =  etRanking.getText().toString();
-                openRanking(value);
-                reset();
+
             }
         });
 
-        adRanking.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        adb.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 reset();
             }
         });
+
+        adRanking = adb.create();
+        adRanking.setCanceledOnTouchOutside(false);
+
     }
 
     private String getTimerString()
