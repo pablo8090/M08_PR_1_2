@@ -58,17 +58,21 @@ public class MainActivity extends AppCompatActivity {
         txtLog.setTextColor(Color.RED);
         txtLog.setTextSize(TypedValue.COMPLEX_UNIT_SP,17);
 
-
+        // Set the task for the timer, which executes every second for have a timer
         setTimerTask();
 
+        // Set and prepare the dialog
         setRankingDialog();
 
+        // Set attempts textview
         final TextView txtAttempts = findViewById(R.id.txtAttempts);
         txtAttempts.setText("Intentos: " + attempts);
         txtAttempts.setTextColor(Color.BLACK);
 
+        // Gets edit text
         final EditText editNumber = findViewById(R.id.editNumber);
 
+        // Setting the validation button
         final Button btValidate = findViewById(R.id.btValidate);
         btValidate.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
@@ -93,8 +97,9 @@ public class MainActivity extends AppCompatActivity {
                         logReg = "El numero que buscas es mas pequeño que " + in;
                         attempts++;
                     }
-                    else
+                    else // Number found
                     {
+                        // Stops the timer, saves the record time and opens the ranking dialog
                         timerActive = false;
                         recordTime = time + (minutes*60);
                         logReg = "Has encontrado el numero " + number + " en " + attempts + " intentos y " + recordTime + " segundos!";
@@ -103,56 +108,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                int lastChar = txtLog.getText().length() - 1; // Save last '\n' before new append
-                txtLog.append(getTimerString() + " > " + logReg + "\n");
+                // Every click on this validate button will generate an action and saved in the log
+                // This function add the new register to the log, also it manages deleting old logs for avoid cutting off the text
+                manageLog(txtLog, logReg);
 
-                // Manage log text content for avoid cut off text.
-
-                if ((txtLog.getLineCount() * txtLog.getLineHeight() > txtLog.getHeight()))
-                {
-                   CharSequence logContent = txtLog.getText();
-                   CharSequence lastAppend = logContent.subSequence(lastChar+1, logContent.length());
-
-                   //i will be the index of the first line end -- '\n'
-                   int i = 0;
-                   for (i = 0; i < logContent.length(); i++)
-                   {
-                       if (logContent.charAt(i) == '\n')
-                           break;
-                   }
-
-
-                   // Erase one or two registers depending if appended text needs more or less space for not being cut off.
-
-                   if (txtLog.getPaint().measureText(logContent, 0, i) > txtLog.getWidth())
-                   {
-                       // First register fills more than one line so we can just erase it
-                       txtLog.setText(logContent.subSequence(i+1,logContent.length()));
-                   }
-                   else
-                   {
-                       if (txtLog.getPaint().measureText(lastAppend, 0, lastAppend.length()) > txtLog.getWidth())
-                       {
-                           // In this case first register only fill one line and last append fill two, so we need to erase two registers
-                           // Finding second register...
-                           int j;
-                           for (j = i+1; j < logContent.length(); j++)
-                           {
-                               if (logContent.charAt(j) == '\n')
-                                   break;
-                           }
-                           txtLog.setText(logContent.subSequence(j+1,logContent.length()));
-                       }
-                       else
-                       {
-                           // Last append only fills one line so we can just erase first register
-                           txtLog.setText(logContent.subSequence(i+1,logContent.length()));
-                       }
-                   }
-
-                }
                 txtAttempts.setText("Intentos: " + attempts);
                 editNumber.setText("");
+
             }
         });
     }
@@ -222,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
         adRanking.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 String value =  etRanking.getText().toString();
 
                 if ((value.length() <= 10 && value.length() >= 1) && !value.contains("\n"))
@@ -278,5 +241,58 @@ public class MainActivity extends AppCompatActivity {
         sBuilder.append(seconds);
 
         return sBuilder.toString();
+    }
+
+    private void manageLog(TextView txtLog, String logReg){
+        // Save last '\n' before new append
+        int lastChar = txtLog.getText().length() - 1;
+        txtLog.append(getTimerString() + " > " + logReg + "\n");
+
+
+
+        if ((txtLog.getLineCount() * txtLog.getLineHeight() > txtLog.getHeight()))
+        {
+            CharSequence logContent = txtLog.getText();
+            CharSequence lastAppend = logContent.subSequence(lastChar+1, logContent.length());
+
+            //i will be the index of the first line end -- '\n'
+            int i = 0;
+            for (i = 0; i < logContent.length(); i++)
+            {
+                if (logContent.charAt(i) == '\n')
+                    break;
+            }
+
+
+            // Erase one or two registers depending if appended text needs more or less space for not being cut off.
+
+            if (txtLog.getPaint().measureText(logContent, 0, i) > txtLog.getWidth())
+            {
+                // First register fills more than one line so we can just erase it
+                txtLog.setText(logContent.subSequence(i+1,logContent.length()));
+            }
+            else
+            {
+                if (txtLog.getPaint().measureText(lastAppend, 0, lastAppend.length()) > txtLog.getWidth())
+                {
+                    // In this case first register only fill one line and last append fill two, so we need to erase two registers
+                    // Finding second register...
+                    int j;
+                    for (j = i+1; j < logContent.length(); j++)
+                    {
+                        if (logContent.charAt(j) == '\n')
+                            break;
+                    }
+                    txtLog.setText(logContent.subSequence(j+1,logContent.length()));
+                }
+                else
+                {
+                    // Last append only fills one line so we can just erase first register
+                    txtLog.setText(logContent.subSequence(i+1,logContent.length()));
+                }
+            }
+
+        }
+
     }
 }
