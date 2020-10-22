@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     private int number;
     private int attempts;
-
+    private int recordAtt;
 
     public static final String EXTRA_MESSAGE = "com.example.m08_pr_1_2.MESSAGE";
 
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set attempts textview
         final TextView txtAttempts = findViewById(R.id.txtAttempts);
-        txtAttempts.setText("Intentos: " + attempts);
+        txtAttempts.setText("Fallos: " + attempts);
         txtAttempts.setTextColor(Color.BLACK);
 
         // Gets edit text
@@ -86,33 +86,42 @@ public class MainActivity extends AppCompatActivity {
                 else
                 {
                     int in = Integer.parseInt(sIn);
+                    if (in < 1 || in > 100)
+                    {
+                        logReg = "El numero introducido no esta entre 1 y 100!!";
+                    }
+                    else
+                    {
+                        if (number > in)
+                        {
+                            logReg = "El numero que buscas es mas grande que " + in;
+                            attempts++;
+                        }
+                        else if (number < in)
+                        {
+                            logReg = "El numero que buscas es mas pequeño que " + in;
+                            attempts++;
+                        }
+                        else // Number found
+                        {
+                            // Stops the timer, saves the record time and opens the ranking dialog
+                            timerActive = false;
+                            recordTime = time + (minutes*60);
+                            recordAtt = attempts;
+                            logReg = "Has encontrado el numero " + number + " en " + recordAtt + " intentos y " + recordTime + " segundos!";
+                            showRankingDialog();
 
-                    if (number > in)
-                    {
-                        logReg = "El numero que buscas es mas grande que " + in;
-                        attempts++;
+                        }
                     }
-                    else if (number < in)
-                    {
-                        logReg = "El numero que buscas es mas pequeño que " + in;
-                        attempts++;
-                    }
-                    else // Number found
-                    {
-                        // Stops the timer, saves the record time and opens the ranking dialog
-                        timerActive = false;
-                        recordTime = time + (minutes*60);
-                        logReg = "Has encontrado el numero " + number + " en " + attempts + " intentos y " + recordTime + " segundos!";
-                        showRankingDialog();
 
-                    }
                 }
 
-                // Every click on this validate button will generate an action and saved in the log
+                // Every click on this validate button will generate an action which is saved in the log
                 // This function add the new register to the log, also it manages deleting old logs for avoid cutting off the text
                 manageLog(txtLog, logReg);
 
-                txtAttempts.setText("Intentos: " + attempts);
+                // reset attempts textview and the edit text
+                txtAttempts.setText("Fallos: " + attempts);
                 editNumber.setText("");
 
             }
@@ -120,9 +129,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openRanking(String nick) {
-
+        // Opens activity ranking with the intent message for save the new result
         Intent intent = new Intent(this, Ranking.class);
-        String message = nick + "," + attempts + "," + recordTime;
+        String message = nick + "," + recordAtt + "," + recordTime;
         intent.putExtra(EXTRA_MESSAGE,message);
         startActivity(intent);
     }
@@ -130,21 +139,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void reset()
     {
+        // Resets all parameters for new game
         timerActive = true;
         number = (int) (Math.random() * 100 + 1);
-        number = 10;
         attempts = 0;
         time = 0;
         minutes = 0;
         TextView log = findViewById(R.id.txtLog);
         log.setText("");
         TextView att = findViewById(R.id.txtAttempts);
-        att.setText("Intentos: 0");
+        att.setText("Fallos: 0");
     }
 
     private void setTimerTask() {
         second = new TimerTask() {
-
             public void run() {
                 if (timerActive)
                 {
@@ -180,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showRankingDialog()
     {
+        // Show the ranking dialog and after show it gets the possitive button an override his click listener for control the input.
         adRanking.show();
         adRanking.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -204,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     private void setRankingDialog() {
+        // Builds ranking dialog
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         adb.setTitle("¿Quieres guardar tu puntuación en el Ranking?");
         adb.setMessage("Introduce tu nombre: ");
@@ -230,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String getTimerString()
     {
+        // This function returns a 00:00 format timer string
         StringBuilder sBuilder = new StringBuilder();
 
         if (minutes < 10)

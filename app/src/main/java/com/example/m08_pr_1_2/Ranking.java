@@ -59,7 +59,7 @@ public class Ranking extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        // Charge the saved results in the XML file to the arraylist of results
+        // Load the saved results in the XML file to the arraylist of results
         try {
             readXML();
         } catch (ParserConfigurationException | IOException | SAXException e) {
@@ -79,6 +79,7 @@ public class Ranking extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         // Creating TableLayout and the row layout parameters
         TableLayout tbl = findViewById(R.id.tlRanking);
 
@@ -87,9 +88,9 @@ public class Ranking extends AppCompatActivity {
 
         // Setting Header Row for the tablelayout
         String headers[] = new String[3];
-        headers[0] = "USUARI";
-        headers[1] = "INTENTS";
-        headers[2] = "TEMPS";
+        headers[0] = "USUARIO";
+        headers[1] = "FALLOS";
+        headers[2] = "TIEMPO";
         tbl.addView(generateRow(headers, 25, textViewParams, tableRowParams));
 
         // Setting all results rows for the table layout
@@ -99,8 +100,6 @@ public class Ranking extends AppCompatActivity {
             String[] items = r.getData();
             tbl.addView(generateRow(items, 20,textViewParams, tableRowParams));
         }
-
-
 
         // Setting back button
         final Button bt = findViewById(R.id.btBack);
