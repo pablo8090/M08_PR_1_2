@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         txtAttempts.setTextColor(Color.BLACK);
 
         final EditText editNumber = findViewById(R.id.editNumber);
-        
+
         final Button btValidate = findViewById(R.id.btValidate);
         btValidate.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
@@ -96,17 +96,24 @@ public class MainActivity extends AppCompatActivity {
                     else
                     {
                         timerActive = false;
-                        recordTime = time;
+                        recordTime = time + (minutes*60);
                         logReg = "Has encontrado el numero " + number + " en " + attempts + " intentos y " + recordTime + " segundos!";
                         showRankingDialog();
 
                     }
                 }
 
+                int lastChar = txtLog.getText().length() - 1; // Save last '\n' before new append
                 txtLog.append(getTimerString() + " > " + logReg + "\n");
+
+                // Manage log text content for avoid cut off text.
+
                 if ((txtLog.getLineCount() * txtLog.getLineHeight() > txtLog.getHeight()))
                 {
                    CharSequence logContent = txtLog.getText();
+                   CharSequence lastAppend = logContent.subSequence(lastChar+1, logContent.length());
+
+                   //i will be the index of the first line end -- '\n'
                    int i = 0;
                    for (i = 0; i < logContent.length(); i++)
                    {
@@ -114,7 +121,35 @@ public class MainActivity extends AppCompatActivity {
                            break;
                    }
 
-                   txtLog.setText(logContent.subSequence(i+1,logContent.length()));
+
+                   // Erase one or two registers depending if appended text needs more or less space for not being cut off.
+
+                   if (txtLog.getPaint().measureText(logContent, 0, i) > txtLog.getWidth())
+                   {
+                       // First register fills more than one line so we can just erase it
+                       txtLog.setText(logContent.subSequence(i+1,logContent.length()));
+                   }
+                   else
+                   {
+                       if (txtLog.getPaint().measureText(lastAppend, 0, lastAppend.length()) > txtLog.getWidth())
+                       {
+                           // In this case first register only fill one line and last append fill two, so we need to erase two registers
+                           // Finding second register...
+                           int j;
+                           for (j = i+1; j < logContent.length(); j++)
+                           {
+                               if (logContent.charAt(j) == '\n')
+                                   break;
+                           }
+                           txtLog.setText(logContent.subSequence(j+1,logContent.length()));
+                       }
+                       else
+                       {
+                           // Last append only fills one line so we can just erase first register
+                           txtLog.setText(logContent.subSequence(i+1,logContent.length()));
+                       }
+                   }
+
                 }
                 txtAttempts.setText("Intentos: " + attempts);
                 editNumber.setText("");
@@ -188,14 +223,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String value =  etRanking.getText().toString();
-                if (value.length() <= 10 && value.length() >= 1)
+
+                if ((value.length() <= 10 && value.length() >= 1) && !value.contains("\n"))
                 {
                     adRanking.dismiss();
                     openRanking(value);
                 }
                 else
                 {
-                    Toast t = Toast.makeText(getApplicationContext(), "El nombre tiene que contener entre 1 y 10 caracteres", Toast.LENGTH_LONG);
+                    Toast t = Toast.makeText(getApplicationContext(), "El nombre tiene que contener entre 1 y 10 caracteres y sin saltos de linea", Toast.LENGTH_LONG);
                     t.show();
                 }
 
