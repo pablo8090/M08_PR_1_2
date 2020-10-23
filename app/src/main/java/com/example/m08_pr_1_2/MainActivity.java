@@ -142,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
         // Resets all parameters for new game
         timerActive = true;
         number = (int) (Math.random() * 100 + 1);
+        number = 1;
         attempts = 0;
         time = 0;
         minutes = 0;

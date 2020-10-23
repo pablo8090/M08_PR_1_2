@@ -1,6 +1,8 @@
 package com.example.m08_pr_1_2;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ActionBar;
 import android.content.Intent;
@@ -37,6 +39,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+
 public class Ranking extends AppCompatActivity {
 
     private ArrayList<Result> results = new ArrayList<Result>();
@@ -72,34 +75,27 @@ public class Ranking extends AppCompatActivity {
         String[] intentMessageSplit = intentMessage.split(",");
         Result res = new Result(intentMessageSplit[0], Integer.parseInt(intentMessageSplit[1]), Integer.parseInt(intentMessageSplit[2]));
         results.add(res);
+        sortResults();
 
-        // Save the new result to the xml file
-        try {
-            saveResult(res);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        // Creating TableLayout and the row layout parameters
-        TableLayout tbl = findViewById(R.id.tlRanking);
-
-        TableRow.LayoutParams textViewParams = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT,1.0f);
-        TableRow.LayoutParams tableRowParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
-
-        // Setting Header Row for the tablelayout
-        String headers[] = new String[3];
-        headers[0] = "USUARIO";
-        headers[1] = "FALLOS";
-        headers[2] = "TIEMPO";
-        tbl.addView(generateRow(headers, 25, textViewParams, tableRowParams));
-
-        // Setting all results rows for the table layout
-        Collections.sort(results, new ResultComparator());
-        for (Result r : results)
+        for (int i = 0; i < 50; i++)
         {
-            String[] items = r.getData();
-            tbl.addView(generateRow(items, 20,textViewParams, tableRowParams));
+            // Save the new result to the xml file
+            try {
+                saveResult(res);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
+
+
+        RecyclerView rv = findViewById(R.id.rv);
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        RecyclerViewAdapter adapter = new RecyclerViewAdapter(this, results);
+        rv.setAdapter(adapter);
+
+
 
         // Setting back button
         final Button bt = findViewById(R.id.btBack);
@@ -117,6 +113,9 @@ public class Ranking extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void sortResults(){
+        Collections.sort(results, new ResultComparator());
+    }
     private TextView generateTV (String text, int color, int dpTextSize, TableRow.LayoutParams textViewParams)
     {
         // Generates a textview within a text, color, size and layout params
@@ -200,6 +199,7 @@ public class Ranking extends AppCompatActivity {
     }
     private void saveResult(Result r) throws IOException {
         // This function saves a result into the XML file
+
 
         // Gets all file content to string
         String content = getFileContent(rankingFile.getAbsolutePath());
