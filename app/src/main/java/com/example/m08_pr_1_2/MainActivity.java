@@ -5,13 +5,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private int recordAtt;
 
     public static final String EXTRA_MESSAGE = "com.example.m08_pr_1_2.MESSAGE";
+    public static final String EXTRA_BITMAP  = "com.example.m08_pr_1_2.BITMAP";
 
     private int time;
     private int recordTime;
@@ -39,7 +44,8 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog adRanking;
     private EditText etRanking;
 
-
+    private Bitmap rankingBitmap;
+    private String rankingNick;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
             // Timer view
         txtTimer = findViewById(R.id.txtTimer);
         txtTimer.setText("");
-        txtTimer.setTextColor(Color.BLACK);
             // Log view
         final TextView txtLog = findViewById(R.id.txtLog);
         txtLog.setText("");
@@ -67,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
         // Set attempts textview
         final TextView txtAttempts = findViewById(R.id.txtAttempts);
         txtAttempts.setText("Fallos: " + attempts);
-        txtAttempts.setTextColor(Color.BLACK);
 
         // Gets edit text
         final EditText editNumber = findViewById(R.id.editNumber);
@@ -78,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String sIn = String.valueOf(editNumber.getText());
                 String logReg = null;
+
 
                 if (sIn.equals("") || sIn == null)
                 {
@@ -128,14 +133,38 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void openRanking(String nick) {
+    private void openRanking() {
         // Opens activity ranking with the intent message for save the new result
-        Intent intent = new Intent(this, Ranking.class);
-        String message = nick + "," + recordAtt + "," + recordTime;
+        Intent intent = new Intent(MainActivity.this, Ranking.class);
+        String message = rankingNick + "," + recordAtt + "," + recordTime;
         intent.putExtra(EXTRA_MESSAGE,message);
+        intent.putExtra(EXTRA_BITMAP, rankingBitmap);
         startActivity(intent);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK)
+        {
+            Bundle extras = data.getExtras();
+            rankingBitmap = (Bitmap) extras.get("data");
+            openRanking();
+        }
+
+
+
+
+    }
+
+    private void getCameraPhoto() {
+        Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, 1);
+        }
+    }
 
     private void reset()
     {
@@ -199,8 +228,10 @@ public class MainActivity extends AppCompatActivity {
 
                 if ((value.length() <= 10 && value.length() >= 1) && !value.contains("\n"))
                 {
+                    rankingNick = value;
                     adRanking.dismiss();
-                    openRanking(value);
+                    getCameraPhoto();
+
                 }
                 else
                 {

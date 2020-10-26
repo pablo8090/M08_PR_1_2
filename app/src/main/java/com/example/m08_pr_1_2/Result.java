@@ -1,14 +1,18 @@
 package com.example.m08_pr_1_2;
 
+import android.graphics.Bitmap;
+
 public class Result {
     private int tries;
     private String nick;
     private int time;
+    private Bitmap photo;
 
-    public Result(String nick, int tries, int ms){
+    public Result(String nick, int tries, int ms, Bitmap photo){
         this.tries = tries;
         this.nick = nick;
         this.time = ms;
+        this.photo = photo;
     }
     public String[] getData (){
         String items[] = new String[3];
@@ -27,7 +31,9 @@ public class Result {
     public String getNick(){
         return nick;
     }
-
+    public Bitmap getPhoto(){
+        return photo;
+    }
     private String getTimerString()
     {
         StringBuilder sBuilder = new StringBuilder();

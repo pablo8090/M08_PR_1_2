@@ -1,18 +1,25 @@
 package com.example.m08_pr_1_2;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ActionBar;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.ShapeDrawable;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.util.TypedValue;
 import android.util.Xml;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -25,6 +32,9 @@ import org.xmlpull.v1.XmlSerializer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -32,8 +42,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -42,17 +54,33 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class Ranking extends AppCompatActivity {
 
+    // Constants
+    public static final int REQUEST_IMAGE_CAPTURE = 1;
+    public static final String photoExt = ".png";
+
+
+    // Attributes
     private ArrayList<Result> results = new ArrayList<Result>();
     private File rankingDir;
     private File rankingFile;
+    private File rankingPhotoDir;
+    private Bitmap rankingBitmap;
+
+    private boolean pauseThread;
+    Button bt;
 
 
     private String[] intentMessageSplit;
 
 
+
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ranking);
+
+
+
 
 
         // Setting dir and file
@@ -62,43 +90,49 @@ public class Ranking extends AppCompatActivity {
             e.printStackTrace();
         }
 
+
         // Load the saved results in the XML file to the arraylist of results
         try {
             readXML();
+            int a =0;
         } catch (ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();
         }
 
+
         // Getting intent extra message info and adding a new Result.
         Intent intent = getIntent();
+        rankingBitmap = (Bitmap) intent.getParcelableExtra(MainActivity.EXTRA_BITMAP);
         String intentMessage = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
         String[] intentMessageSplit = intentMessage.split(",");
-        Result res = new Result(intentMessageSplit[0], Integer.parseInt(intentMessageSplit[1]), Integer.parseInt(intentMessageSplit[2]));
+        Result res = new Result(intentMessageSplit[0], Integer.parseInt(intentMessageSplit[1]), Integer.parseInt(intentMessageSplit[2]), rankingBitmap);
         results.add(res);
         sortResults();
 
 
-        for (int i = 0; i < 50; i++)
-        {
-            // Save the new result to the xml file
-            try {
-                saveResult(res);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        // Save the new result to the xml file
+        try {
+            saveResult(res);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
 
 
+
         RecyclerView rv = findViewById(R.id.rv);
-        rv.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager lm = new LinearLayoutManager(this);
+        rv.setLayoutManager(lm);
         RecyclerViewAdapter adapter = new RecyclerViewAdapter(this, results);
         rv.setAdapter(adapter);
 
+        DividerItemDecoration divider = new DividerItemDecoration(rv.getContext(), lm.getOrientation());
+
+        rv.addItemDecoration(divider);
 
 
         // Setting back button
-        final Button bt = findViewById(R.id.btBack);
+        bt = findViewById(R.id.btBack);
         bt.setText("Volver a jugar");
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,14 +177,19 @@ public class Ranking extends AppCompatActivity {
     }
 
     private void prepareStorage() throws IOException {
-        // dir
+        // ranking root dir
         rankingDir = new File(getApplicationContext().getFilesDir(),"ranking");
         if (!rankingDir.exists())
             rankingDir.mkdir();
 
+        // photo subdir
+        rankingPhotoDir = new File(rankingDir, "photos");
+        if (!rankingPhotoDir.exists())
+            rankingPhotoDir.mkdir();
+
         // file
         rankingFile = new File(rankingDir, "ranking.xml");
-
+        //xrankingFile.delete();
         // If ranking.xml doesnt exists, create it and add root tag to it.
         if (!rankingFile.exists())
         {
@@ -173,7 +212,7 @@ public class Ranking extends AppCompatActivity {
         {
             Node result = nlResults.item(i); // get result node
             NodeList resultProperties = result.getChildNodes(); // get child nodes for the result node
-            String nick = "";
+            String bitmapPath = "", nick = "";
             int tries = 0, time = 0;
             // Iterate the result child nodes and setting the properties variables with the data
             for (int j = 0; j < resultProperties.getLength(); j++)
@@ -192,10 +231,18 @@ public class Ranking extends AppCompatActivity {
                         break sw;
                 }
             }
+
+            Bitmap photo = getBitmap(nick + photoExt, rankingPhotoDir);
+
             // Create and add a new result
-            results.add(new Result(nick,tries,time));
+            results.add(new Result(nick,tries,time,photo));
         }
 
+    }
+    private Bitmap getBitmap(String filename, File dirPath) throws FileNotFoundException {
+        File bFile = new File(dirPath.getAbsolutePath(), filename);
+        Bitmap b = BitmapFactory.decodeStream(new FileInputStream(bFile));
+        return b;
     }
     private void saveResult(Result r) throws IOException {
         // This function saves a result into the XML file
@@ -223,6 +270,11 @@ public class Ranking extends AppCompatActivity {
         FileWriter fw = new FileWriter(rankingFile);
         fw.write(content);
         fw.close();
+
+        File photo = new File(rankingPhotoDir, r.getNick() + photoExt);
+        FileOutputStream fos = new FileOutputStream(photo);
+        rankingBitmap.compress(Bitmap.CompressFormat.PNG, 100,fos);
+        fos.close();
     }
 
     private String getFileContent(String path) throws IOException {
