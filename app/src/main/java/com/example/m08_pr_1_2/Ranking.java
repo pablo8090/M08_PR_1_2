@@ -189,7 +189,7 @@ public class Ranking extends AppCompatActivity {
 
         // file
         rankingFile = new File(rankingDir, "ranking.xml");
-        //xrankingFile.delete();
+        //rankingFile.delete();
         // If ranking.xml doesnt exists, create it and add root tag to it.
         if (!rankingFile.exists())
         {

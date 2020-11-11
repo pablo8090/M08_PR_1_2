@@ -164,6 +164,8 @@ public class MainActivity extends AppCompatActivity {
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(takePictureIntent, 1);
         }
+        startActivityForResult(takePictureIntent, 1);
+
     }
 
     private void reset()
