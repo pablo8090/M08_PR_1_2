@@ -1,4 +1,4 @@
-package com.example.m08_pr_1_2;
+    package com.example.m08_pr_1_2;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,13 +24,16 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    private int number;
-    private int attempts;
-    private int recordAtt;
-
+    // Constants
     public static final String EXTRA_MESSAGE = "com.example.m08_pr_1_2.MESSAGE";
     public static final String EXTRA_BITMAP  = "com.example.m08_pr_1_2.BITMAP";
 
+    // Attributes
+        //game
+    private int number;
+    private int attempts;
+    private int recordAtt;
+        //timer
     private int time;
     private int recordTime;
     private int minutes;
@@ -39,14 +42,15 @@ public class MainActivity extends AppCompatActivity {
     private Timer timer;
     private TextView txtTimer;
     private boolean timerActive;
-
-
+        //dialog
     private AlertDialog adRanking;
     private EditText etRanking;
-
+        //bitmap
     private Bitmap rankingBitmap;
     private String rankingNick;
 
+
+    // Methods
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -76,13 +80,13 @@ public class MainActivity extends AppCompatActivity {
         // Gets edit text
         final EditText editNumber = findViewById(R.id.editNumber);
 
-        // Setting the validation button
+        // Setting the validation button (Game logic insdie)
         final Button btValidate = findViewById(R.id.btValidate);
         btValidate.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
+                // Getting user input
                 String sIn = String.valueOf(editNumber.getText());
                 String logReg = null;
-
 
                 if (sIn.equals("") || sIn == null)
                 {
@@ -144,7 +148,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
+        // Called when camera activity finish
+        // Gets the bitmap and open the ranking
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK)
         {
@@ -152,18 +157,16 @@ public class MainActivity extends AppCompatActivity {
             rankingBitmap = (Bitmap) extras.get("data");
             openRanking();
         }
-
-
-
-
     }
 
     private void getCameraPhoto() {
+        // Calls the camera
         Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-
+        /*
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(takePictureIntent, 1);
-        }
+        }*/
+
         startActivityForResult(takePictureIntent, 1);
 
     }
@@ -173,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
         // Resets all parameters for new game
         timerActive = true;
         number = (int) (Math.random() * 100 + 1);
-        number = 1;
+        //number = 1; //hardcode number
         attempts = 0;
         time = 0;
         minutes = 0;
@@ -184,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setTimerTask() {
+        // Set timer task which controls the timer
         second = new TimerTask() {
             public void run() {
                 if (timerActive)
@@ -213,10 +217,10 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        // Creating the timer with the timertask every second
         timer = new Timer();
         timer.schedule(second, 0, 1000);
     }
-
 
     private void showRankingDialog()
     {
@@ -246,6 +250,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
     private void setRankingDialog() {
         // Builds ranking dialog
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
@@ -288,12 +294,11 @@ public class MainActivity extends AppCompatActivity {
         return sBuilder.toString();
     }
 
+    // Manage log for not having text out of the textview
     private void manageLog(TextView txtLog, String logReg){
         // Save last '\n' before new append
         int lastChar = txtLog.getText().length() - 1;
         txtLog.append(getTimerString() + " > " + logReg + "\n");
-
-
 
         if ((txtLog.getLineCount() * txtLog.getLineHeight() > txtLog.getHeight()))
         {

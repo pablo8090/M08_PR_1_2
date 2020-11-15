@@ -1,34 +1,26 @@
 package com.example.m08_pr_1_2;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TableRow;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.ActionBar;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ShapeDrawable;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.util.TypedValue;
-import android.util.Xml;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xmlpull.v1.XmlSerializer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,14 +30,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -58,7 +44,6 @@ public class Ranking extends AppCompatActivity {
     public static final int REQUEST_IMAGE_CAPTURE = 1;
     public static final String photoExt = ".png";
 
-
     // Attributes
     private ArrayList<Result> results = new ArrayList<Result>();
     private File rankingDir;
@@ -66,22 +51,10 @@ public class Ranking extends AppCompatActivity {
     private File rankingPhotoDir;
     private Bitmap rankingBitmap;
 
-    private boolean pauseThread;
-    Button bt;
-
-
-    private String[] intentMessageSplit;
-
-
-
-
+    // Methods
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ranking);
-
-
-
-
 
         // Setting dir and file
         try {
@@ -90,7 +63,6 @@ public class Ranking extends AppCompatActivity {
             e.printStackTrace();
         }
 
-
         // Load the saved results in the XML file to the arraylist of results
         try {
             readXML();
@@ -98,7 +70,6 @@ public class Ranking extends AppCompatActivity {
         } catch (ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();
         }
-
 
         // Getting intent extra message info and adding a new Result.
         Intent intent = getIntent();
@@ -109,7 +80,6 @@ public class Ranking extends AppCompatActivity {
         results.add(res);
         sortResults();
 
-
         // Save the new result to the xml file
         try {
             saveResult(res);
@@ -117,21 +87,17 @@ public class Ranking extends AppCompatActivity {
             e.printStackTrace();
         }
 
-
-
-
+        // Setting RecyclerView
         RecyclerView rv = findViewById(R.id.rv);
         LinearLayoutManager lm = new LinearLayoutManager(this);
         rv.setLayoutManager(lm);
-        RecyclerViewAdapter adapter = new RecyclerViewAdapter(this, results);
+        RecyclerViewAdapter adapter = new RecyclerViewAdapter(this, results); // Class RecyclerViewAdapter.java
         rv.setAdapter(adapter);
-
         DividerItemDecoration divider = new DividerItemDecoration(rv.getContext(), lm.getOrientation());
-
         rv.addItemDecoration(divider);
 
-
         // Setting back button
+        Button bt;
         bt = findViewById(R.id.btBack);
         bt.setText("Volver a jugar");
         bt.setOnClickListener(new View.OnClickListener() {
@@ -143,6 +109,7 @@ public class Ranking extends AppCompatActivity {
     }
 
     public void backToMain(){
+        // Back to main intent
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
@@ -189,7 +156,7 @@ public class Ranking extends AppCompatActivity {
 
         // file
         rankingFile = new File(rankingDir, "ranking.xml");
-        //rankingFile.delete();
+
         // If ranking.xml doesnt exists, create it and add root tag to it.
         if (!rankingFile.exists())
         {
@@ -240,6 +207,7 @@ public class Ranking extends AppCompatActivity {
 
     }
     private Bitmap getBitmap(String filename, File dirPath) throws FileNotFoundException {
+        // Returns a bitmap for a given filename and dirpath
         File bFile = new File(dirPath.getAbsolutePath(), filename);
         Bitmap b = BitmapFactory.decodeStream(new FileInputStream(bFile));
         return b;
@@ -247,10 +215,8 @@ public class Ranking extends AppCompatActivity {
     private void saveResult(Result r) throws IOException {
         // This function saves a result into the XML file
 
-
         // Gets all file content to string
         String content = getFileContent(rankingFile.getAbsolutePath());
-
         // Create a string builder and append contents to it
         StringBuilder sb = new StringBuilder();
         sb.append(content);
@@ -271,8 +237,10 @@ public class Ranking extends AppCompatActivity {
         fw.write(content);
         fw.close();
 
+        // Create a new file in the photo dir with the name of the nick
         File photo = new File(rankingPhotoDir, r.getNick() + photoExt);
         FileOutputStream fos = new FileOutputStream(photo);
+        // Compress bitmap into the file with the stream
         rankingBitmap.compress(Bitmap.CompressFormat.PNG, 100,fos);
         fos.close();
     }
